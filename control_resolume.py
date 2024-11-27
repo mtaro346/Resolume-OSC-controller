@@ -26,19 +26,24 @@ class ResolumeController:
                 return play_time
 
     def send_osc_command(self):
-        # コラム1を選択するためのOSCコマンドを送信
-        self.osc_client.send_message('/composition/columns/1/connect', 1)
-        time.sleep(0.1)  # コマンドの処理が間に合うように短い遅延を挿入
+        try:
+            # コラム1を選択するためのOSCコマンドを送信
+            self.osc_client.send_message('/composition/columns/1/connect', 1)
+            time.sleep(0.1)  # コマンドの処理が間に合うように短い遅延を挿入
 
-        # 再生状態に設定するOSCコマンドを送信
-        self.osc_client.send_message('/composition/layers/1/clips/1/transport/position/behaviour/playdirection', 2)
-        self.osc_client.send_message('/composition/layers/2/clips/1/transport/position/behaviour/playdirection', 2)
-        self.osc_client.send_message('/composition/layers/3/clips/1/transport/position/behaviour/playdirection', 2)
-        self.osc_client.send_message('/composition/selectedclip/transport/position/behaviour/playdirection', 2)
+            # 再生状態に設定するOSCコマンドを送信
+            self.osc_client.send_message('/composition/layers/1/clips/1/transport/position/behaviour/playdirection', 2)
+            self.osc_client.send_message('/composition/layers/2/clips/1/transport/position/behaviour/playdirection', 2)
+            self.osc_client.send_message('/composition/layers/3/clips/1/transport/position/behaviour/playdirection', 2)
+            self.osc_client.send_message('/composition/selectedclip/transport/position/behaviour/playdirection', 2)
 
-        # 元のOSCコマンドを送信
-        self.osc_client.send_message('/composition/layers/1/clips/1/connect', 1)
-        print('\nコマンドを送信しました。プログラムを終了します。')
+            # 元のOSCコマンドを送信
+            self.osc_client.send_message('/composition/layers/1/clips/1/connect', 1)
+            print('\nコマンドを送信しました。プログラムを終了します。')
+            return True
+        except Exception as e:
+            print(f'エラーが発生しました: {e}')
+            return False
 
     def run(self):
         try:
@@ -47,7 +52,16 @@ class ResolumeController:
                 remaining = self.play_time - now
                 remaining_seconds = int(remaining.total_seconds())
                 if remaining_seconds <= 0:
-                    self.send_osc_command()
+                    for attempt in range(2):
+                        if self.send_osc_command():
+                            break
+                        print(f'再試行 {attempt + 1}/2')
+                        time.sleep(1)
+                    else:
+                        with open('error_log.txt', 'a') as log_file:
+                            log_file.write(f'{datetime.now()}: コマンド送信に失敗しました。\n')
+                        print('エラーが発生しました。エラーログを確認してください。')
+                        input('エンターキーを押して終了します...')
                     break
                 hours, remainder = divmod(remaining_seconds, 3600)
                 minutes, seconds = divmod(remainder, 60)
