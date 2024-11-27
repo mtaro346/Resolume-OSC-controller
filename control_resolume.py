@@ -26,12 +26,14 @@ class ResolumeController:
                 return play_time
 
     def send_osc_command(self):
-        # クリップを選択するOSCコマンドを送信（必要に応じてアドレスを変更してください）
-        self.osc_client.send_message('/composition/layers/1/clips/1/select', 1)
+        # コラム1を選択するためのOSCコマンドを送信
+        self.osc_client.send_message('/composition/columns/1/connect', 1)
         time.sleep(0.1)  # コマンドの処理が間に合うように短い遅延を挿入
 
         # 再生状態に設定するOSCコマンドを送信
         self.osc_client.send_message('/composition/layers/1/clips/1/transport/position/behaviour/playdirection', 2)
+        self.osc_client.send_message('/composition/layers/2/clips/1/transport/position/behaviour/playdirection', 2)
+        self.osc_client.send_message('/composition/layers/3/clips/1/transport/position/behaviour/playdirection', 2)
         self.osc_client.send_message('/composition/selectedclip/transport/position/behaviour/playdirection', 2)
 
         # 元のOSCコマンドを送信
