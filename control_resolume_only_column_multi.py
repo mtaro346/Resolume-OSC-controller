@@ -50,7 +50,7 @@ class ResolumeController:
                     remaining = play_time - now
                     remaining_seconds = int(remaining.total_seconds())
                     if remaining_seconds <= 0:
-                        for attempt in range(2):
+                        for attempt in range(2):  # 2回まで再送信を試みる
                             if self.send_osc_command():
                                 break
                             print(f'再試行 {attempt + 1}/2')
@@ -59,8 +59,7 @@ class ResolumeController:
                             with open('error_log.txt', 'a') as log_file:
                                 log_file.write(f'{datetime.now()}: コマンド送信に失敗しました。\n')
                             print('エラーが発生しました。エラーログを確認してください。')
-                            input('エンターキーを押して終了します...')
-                        break
+                        break  # 次のスケジュールに進む
                     hours, remainder = divmod(remaining_seconds, 3600)
                     minutes, seconds = divmod(remainder, 60)
                     current_time_str = now.strftime('%H:%M:%S')
