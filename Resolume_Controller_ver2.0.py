@@ -197,7 +197,7 @@ class ResolumeController:
     def run(self):
         # メインの実行メソッド。指定された再生時間まで待機し、OSCコマンドを送信します。
         try:
-            for play_time, column in self.play_times:
+            for i, (play_time, column) in enumerate(self.play_times):
                 while True:
                     now = datetime.now()
                     remaining = play_time - now
@@ -212,6 +212,11 @@ class ResolumeController:
                             with open('error_log.txt', 'a') as log_file:
                                 log_file.write(f'{datetime.now()}: コマンド送信に失敗しました。\n')
                             print('エラーが発生しました。エラーログを確認してください。')
+                        
+                        # 最後のスケジュールが終了したかチェック
+                        if i == len(self.play_times) - 1:
+                            print("\n\nすべてのスケジュールの再生が終了しました。")
+                            input("Enterキーを押して終了します...")
                         break  # 次のスケジュールに進む
 
                     # 残り時間の計算
